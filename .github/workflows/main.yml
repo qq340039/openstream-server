@@ -1,0 +1,27 @@
+name: Build OpenStream Windows EXE
+on: workflow_dispatch # 允許手動點擊按鈕觸發編譯
+
+jobs:
+  build:
+    runs-on: windows-2019 # 使用微軟官方提供的 Windows 2019 環境（完美包含舊版相容庫）
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive # 自動把子模組全部抓齊
+
+      - name: Setup MSBuild & Tools
+        uses: microsoft/setup-msbuild@v1.1
+
+      - name: Configure CMake & Build EXE
+        shell: bash
+        run: |
+          mkdir build && cd build
+          cmake -G "Visual Studio 16 2019" -A x64 -DCMAKE_BUILD_TYPE=Release ..
+          cmake --build . --config Release --parallel 4
+
+      - name: Upload Finished EXE Product
+        uses: actions/upload-artifact@v3
+        with:
+          name: openstream-windows-exe
+          path: build/Release/ # 自動把編譯好的 .exe 成果打包
